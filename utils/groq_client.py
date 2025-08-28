@@ -10,16 +10,16 @@ from config import Config #so groq_client can read the api key from env- no need
 
 class GroqClient: 
     #constructor for class so when you run GroqClient() it makes a fresh obj and run this constructor each time
-    def _init_(self):
-        self.api_key = config.GROQ_API_KEY #initializing keys from config - config initalizes from env
-        self.model = config.GROQ_MODEL
+    def __init__(self):
+        self.api_key = Config.GROQ_API_KEY #initializing keys from config - config initalizes from env
+        self.model = Config.GROQ_MODEL
         """goal: groq()- establishes a direct connection with groq without us handling the low level http. however, setting
         self.client = None because if the key is invalid, then app would crash. therefore initializing a method that we would 
         if the api key is valid and running, and then set up the client"""
         self.client = None
         self.initialize_client()
         
-    def intialize_client(self):
+    def initialize_client(self):
         #so if .env is missing the api key then it would be empty 
         if not self.api_key: 
             st.error("KEY NOT FOUND, PLS ADD YOUR API KEY TO YOUR ENV!")
@@ -55,7 +55,7 @@ class GroqClient:
             )
             return True
         except Exception as e:
-            st.error(f"Groq API Connection failed {e}")
+            st.error(f"Groq API Connecti on failed {e}")
             
     """if the code reaches this point that means its valid and it
     works, however now this block of code is only accessible in this file itself
@@ -69,14 +69,19 @@ class GroqClient:
     
     
     """now defining a method that an app can actually call to get a reply from groq"""
-    def simple_message(self, prompt: str, max_tokens = 200, token = 0.2) -> str:
-        if not self.available():
-            return "Groq client not available"
+    def simple_message(self, prompt: str, max_tokens :int = 200, temperature: float  = 0.2) -> str:
+        if not self.is_available():
+            return "Groq client not available check your API key"
         try:
             resp = self.client.chat.completions.create(
-                messages[{"role": "user", "content" : prompt}],
+                model = self.model ,
+                messages= [{"role": "user", "content" : prompt}],
                 max_tokens = max_tokens,
                 temperature = temperature,
             )
-            return resp.choices[]
+            return resp.choices[0].message.content
+        except Exception as e:
+            return f"Error generating response: {e}"
+        
+    
 
